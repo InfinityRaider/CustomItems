@@ -1,0 +1,21 @@
+[
+{
+"modid": "CustomItems",
+"name": "CustomItems",
+"description": "Add your own custom items and blocks (use with Minetweaker for maximum profit)",
+"version": "0.4a",
+"mcversion": "1.7.10",
+"url": "",
+"updateUrl": "",
+"authorList": [
+"InfinityRaider"
+],
+"credits": "InfinityRaider",
+"logoFile": "",
+"screenshots": [
+],
+"parent":"",
+"dependencies": [
+]
+}
+]
