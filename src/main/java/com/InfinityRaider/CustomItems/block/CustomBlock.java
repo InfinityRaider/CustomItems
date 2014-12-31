@@ -8,13 +8,14 @@ import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IIconRegister;
 
 public class CustomBlock extends Block {
-    public CustomBlock() {
-        this(Material.rock);
-    }
-    public CustomBlock(Material material) {
+    public CustomBlock(Material material, int hardness, int resistance, int lightLevel) {
         super(material);
         this.setCreativeTab(CustomItemsTab.customItemsTab);
+        this.setHardness(hardness);
+        this.setResistance(resistance);
+        this.setLightLevel(lightLevel);
     }
+
 
     @Override
     public String getUnlocalizedName() {

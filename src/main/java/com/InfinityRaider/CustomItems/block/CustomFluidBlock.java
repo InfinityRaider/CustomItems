@@ -14,8 +14,8 @@ import net.minecraftforge.fluids.BlockFluidClassic;
 import net.minecraftforge.fluids.Fluid;
 
 public class CustomFluidBlock extends BlockFluidClassic {
-    public CustomFluidBlock(Fluid fluid, Material material) {
-        super(fluid, material);
+    public CustomFluidBlock(Fluid fluid) {
+        super(fluid, Material.water);
         if(Reference.debug) {this.setCreativeTab(CustomItemsTab.customItemsTab);}
     }
     @SideOnly(Side.CLIENT)

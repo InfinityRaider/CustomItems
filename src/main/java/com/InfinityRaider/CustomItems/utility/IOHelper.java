@@ -1,114 +1,103 @@
-package com.InfinityRaider.CustomItems.handler;
+package com.InfinityRaider.CustomItems.utility;
 
 import com.InfinityRaider.CustomItems.reference.Reference;
-import com.InfinityRaider.CustomItems.utility.LogHelper;
-import net.minecraft.block.material.*;
+import net.minecraft.block.material.Material;
 
-public class InputHandler {
-    public static String[] getArray(String input) {
-        int count = 0;
-        for(int i=0;i<input.length();i++) {
-            count = (input.charAt(i)==';')?(count+1):(count);
-        }
-        if (Reference.debug) { LogHelper.info("#blocks to add: " + count);}
-        String[] array = new String[count];
-        int start=0;
-        int stop;
-        for(int j=0;j<count;j++) {
-            stop = input.indexOf(';',start+1);
-            array[j] = input.substring(start,stop);
-            start = stop+1;
-            if(Reference.debug) {
-                LogHelper.info("array["+j+"]= " +array[j]);
+import java.io.*;
+import java.util.ArrayList;
+
+public class IOHelper {
+    //reads and writes text files
+    public static String readOrWrite(String directory, String fileName, String defaultData) {
+        return readOrWrite(directory, fileName, defaultData, false);
+    }
+
+    public static String readOrWrite(String directory, String fileName, String defaultData, boolean reset) {
+        LogHelper.info("Reading/Writing "+directory+fileName);
+        File file = new File(directory, fileName+".txt");
+        if(file.exists() && !file.isDirectory() && !reset) {
+            try {
+                FileInputStream inputStream = new FileInputStream(file);
+                byte[] input = new byte[(int) file.length()];
+                try {
+                    inputStream.read(input);
+                    inputStream.close();
+                    return new String(input, "UTF-8");
+                } catch (IOException e) {
+                    LogHelper.info("Caught IOException when reading "+fileName+".txt");
+                }
+            } catch(FileNotFoundException e) {
+                LogHelper.info("Caught IOException when reading "+fileName+".txt");
             }
         }
-        return array;
-    }
-
-    public static String getName(String input) {
-        return input.substring(0,input.indexOf('-'));
-    }
-
-    public static String getTexture(String input) {
-        int start = input.indexOf('-')+1;
-        int stop = input.indexOf('-',start);
-        return input.substring(start,stop);
-    }
-
-    public static String[] getRecordData(String input) {
-        String[] s = new String[2];
-        int comma = input.indexOf(',');
-        s[0] = input.substring(0,comma);
-        s[1] = input.substring(comma+1);
-        return s;
-    }
-
-    public static float[] getBlockData(String input) {
-        float[] list = new float[4];
-        int start = input.indexOf(',')+1;
-        int stop;
-        for(int i=0;i<list.length;i++) {
-            stop = input.indexOf(',',start);
-            list[i] = i==(list.length-1)?Float.parseFloat(input.substring(start))+0.00F:Float.parseFloat(input.substring(start,stop))+0.00F;
-            start = stop+1;
-        }
-        return list;
-    }
-
-    public static float[] getToolData(String input) {
-        float[] data = new float[5];
-        int start = input.indexOf('-')+1;
-        int stop;
-        if(Reference.debug) {LogHelper.info("Getting tool data from "+input);}
-        for(int i=0;i<data.length;i++) {
-            stop = (i==data.length-1)?input.length():input.indexOf(',',start);
-            if(Reference.debug) {LogHelper.info("data["+i+"]: "+input.substring(start,stop));}
-            data[i] = Float.parseFloat(input.substring(start,stop));
-            start = stop+1;
-        }
-        return data;
-    }
-
-    public static int[] getArmorData(String input) {
-        int[] data = new int[6];
-        int start = input.indexOf('-')+1;
-        int stop;
-        if(Reference.debug) {LogHelper.info("Getting armor data from "+input);}
-        for(int i=0;i<data.length;i++) {
-            stop = (i==data.length-1)?input.length():input.indexOf(',',start);
-            if(Reference.debug) {LogHelper.info("data["+i+"]: "+input.substring(start,stop));}
-            data[i] = Integer.parseInt(input.substring(start,stop));
-            start = stop+1;
-        }
-        return data;
-    }
-
-    public static int[] getFluidData(String input) {
-        int[] list = new int[4];
-        int start = input.indexOf('-',input.indexOf('-')+1)+1;
-        int stop;
-        for(int i=0;i<list.length;i++) {
-            stop = input.indexOf(',',start);
-            if(Reference.debug) {LogHelper.info("FluidData["+i+"]: "+input.substring(start,stop));}
-            list[i] =Integer.parseInt(input.substring(start,stop));
-            start = stop+1;
-        }
-        return list;
-    }
-    public static boolean getFluidState(String input) {
-        if(input.charAt(input.length()-1)=='g') {return true;}
-        if(input.charAt(input.length()-1)=='l') {return false;}
         else {
-            LogHelper.info(input.charAt(input.length()-1)+" is not a recognized state, put l for liquid, g for gas. Setting state to liquid.");
-            return false;
+            BufferedWriter writer;
+            try {
+                writer = new BufferedWriter(new FileWriter(file));
+                try {
+                    writer.write(defaultData);
+                    writer.close();
+                    return defaultData;
+                }
+                catch(IOException e) {
+                    LogHelper.info("Caught IOException when writing "+fileName+".txt");
+                }
+            }
+            catch(IOException e) {
+                LogHelper.info("Caught IOException when writing "+fileName+".txt");
+            }
         }
+        return null;
     }
 
-    public static Material getMaterial(String input) {
-        String data = input.substring(input.indexOf('-',input.indexOf('-')+1)+1,input.indexOf(','));
+    //turns the raw data string into an array (each array element is a line from the string)
+    public static String[] getLinesArrayFromData(String input) {
+        int count = 0;
+        String unprocessed = input;
+        for (int i=0;i<unprocessed.length();i++) {
+            if (unprocessed.charAt(i) == '\n') {
+                count++;
+            }
+        }
+        ArrayList<String> data = new ArrayList<String>();
+        if (unprocessed.length()>0) {
+            for (int i=0;i<count;i++) {
+                String line = (unprocessed.substring(0,unprocessed.indexOf('\n'))).trim();
+                LogHelper.info("Line: "+line);
+                if (line.length() > 0 && line.charAt(0) != '#') {
+                    data.add(line);
+                }
+                unprocessed = unprocessed.substring(unprocessed.indexOf('\n')+1);
+            }
+        }
+        if (unprocessed.length()>0 && unprocessed.charAt(0)!='#') {
+            data.add(unprocessed);
+        }
+        return data.toArray(new String[data.size()]);
+    }
+
+    //splits a comma seperated string into an array
+    public static String[] getData(String input) {
+        String data = input;
+        int count = 0;
+        for(int i=0;i<data.length();i++) {
+            count=(data.charAt(i)==',')?count+1:count;
+        }
+        ArrayList<String> output = new ArrayList<String>();
+        for(int i=0;i<count;i++) {
+            int stop=data.indexOf(',');
+            output.add(data.substring(0,stop));
+            data=data.substring(stop+1);
+        }
+        output.add(data);
+        return output.toArray(new String[output.size()]);
+    }
+
+    //get material from a string
+    public static Material getMaterial(String data) {
         if(data.equals("air")) {
             if(Reference.debug) {
-            LogHelper.info("Getting material: "+data);
+                LogHelper.info("Getting material: "+data);
             }
             return Material.air;}
         if(data.equals("grass")) {
@@ -273,11 +262,5 @@ public class InputHandler {
             return Material.web;}
         LogHelper.info("Material "+data+" was not found, setting material to rock.");
         return Material.rock;
-    }
-
-    public static int getStackSize(String input) {
-        if(Reference.debug) {LogHelper.info("Getting stacksize for "+input);}
-        int firstDash = input.indexOf('-');
-        return Integer.parseInt(input.substring(input.indexOf('-',firstDash+1)+1));
     }
 }
